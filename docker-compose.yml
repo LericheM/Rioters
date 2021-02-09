@@ -1,0 +1,9 @@
+version: "3"
+services:
+  messsaging:
+    image: rabbitmq:3-management
+    environment: 
+      RABBITMQ_DEFAULT_USER: spade
+      RABBITMQ_DEFAULT_PASS: spade
+    ports:
+      - 15672:15672
