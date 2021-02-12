@@ -1,9 +1,12 @@
 version: "3"
 services:
+  #frontend:
   messsaging:
     image: rabbitmq:3-management
-    environment: 
-      RABBITMQ_DEFAULT_USER: spade
-      RABBITMQ_DEFAULT_PASS: spade
+    environment: #should reference the .env file in this folder
+      - RABBITMQ_DEFAULT_USER=${USER} #user and pass should be TEST for milestone 1
+      - RABBITMQ_DEFAULT_PASS=${PASS}
     ports:
       - 15672:15672
+  #back-end:
+  #db:
