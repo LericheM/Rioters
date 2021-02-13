@@ -9,4 +9,17 @@ services:
     ports:
       - 15672:15672
   #back-end:
-  #db:
+  db:
+    image: mysql:latest
+    expose:
+      - "4407"
+    volumes: #going to use a named volume for now, if it doesn't work we will manually create volumes in a new folder within the db folder
+      - ./db-data:/var/lib/mysql/
+    environment:
+      MYSQL_ROOT_PASSWORD: test
+      MYSQL_DATABASE: Jhin
+      MYSQL_USER: test
+      MYSQL_PASSWORD: test
+    
+#volumes: #need to list named volumes used by containers on the same level as services
+ # db-data:
