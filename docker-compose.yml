@@ -18,7 +18,7 @@ services:
     expose:
       - "4407"
     volumes: #going to use a named volume for now, if it doesn't work we will manually create volumes in a new folder within the db folder
-      - ./db-data:/var/lib/mysql/
+      - ./db/db-data:/var/lib/mysql/
     environment:
       MYSQL_ROOT_PASSWORD: test
       MYSQL_DATABASE: Jhin
