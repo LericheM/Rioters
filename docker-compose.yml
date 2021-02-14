@@ -1,6 +1,13 @@
 version: "3"
 services:
-  #frontend:
+  frontend:
+      build: frontend/
+      ports:
+        - "8080:5000"
+      environment:
+        - RABBITMQ_DEFAULT_USER=${USER}
+        - RABBITMQ_DEFAULT_PASS=${PASS}   
+
   messaging:
     image: rabbitmq:3-management
     environment: #should reference the .env file in this folder
