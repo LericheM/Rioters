@@ -1,0 +1,10 @@
+FROM python
+RUN apt-get update -y && \
+    apt-get install -y python-pip python-dev
+
+COPY ./fdrequirements.txt /app/fdrequirements.txt
+WORKDIR /app
+RUN pip install -r fdrequirements.txt
+COPY . /app
+ENTRYPOINT [ "python" ]
+CMD [ "app.py" ]

@@ -1,4 +1,5 @@
 import pika
+import mysql.connector
 import os
 import time
 import logging
@@ -12,6 +13,9 @@ logging.basicConfig(level=logging.INFO)
 # backoff
 
 time.sleep(15)
+
+cnx = mysql.connector.connect(user='test', password='test', host='172.21.0.5', database='Jhin')
+logging.info(cnx.is_connected())
 
 logging.info("Connecting to messaging service...")
 
@@ -38,3 +42,5 @@ channel.basic_consume(queue='hello world', auto_ack=True,
 # loops forever consuming from 'request' queue
 logging.info("Starting consumption...")
 channel.start_consuming()
+
+cnx.close()
