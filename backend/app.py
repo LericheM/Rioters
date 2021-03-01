@@ -1,4 +1,5 @@
 import pika
+import mysql.connector
 import os
 import time
 import logging
@@ -13,6 +14,22 @@ logging.basicConfig(level=logging.INFO)
 
 time.sleep(15)
 
+cnx = mysql.connector.connect(user='test', password='test', host='172.21.0.5', database='Jhin')
+logging.info(cnx.is_connected())
+
+mycursor = cnx.cursor()
+mycursor.execute("SHOW TABLES")
+count = 0
+for table in mycursor:
+	if(table[0] == "users"):
+		count += 1
+if(count == 0):
+	mycursor.execute("CREATE TABLE users (username VARCHAR(255), password VARCHAR(255))")
+else:
+	mycursor.execute("INSERT INTO users (username, password) VALUES ('test', 'password')")
+	logging.info(mycursor)
+
+cnx.commit()
 logging.info("Connecting to messaging service...")
 
 credentials = pika.PlainCredentials(
@@ -38,3 +55,5 @@ channel.basic_consume(queue='hello world', auto_ack=True,
 # loops forever consuming from 'request' queue
 logging.info("Starting consumption...")
 channel.start_consuming()
+
+cnx.close()
