@@ -7,6 +7,10 @@ services:
       environment:
         - RABBITMQ_DEFAULT_USER=${USER}
         - RABBITMQ_DEFAULT_PASS=${PASS}   
+        - FLASK_ENV=development
+        - FLASK_SECRET_KEY=${FLASK_SECRET_KEY}
+      volumes:
+        - "./frontend:/app"
 
   messaging:
     image: rabbitmq:3-management
