@@ -4,10 +4,20 @@ import os
 import time
 import logging
 
-def process_request(ch, method, properties, body): 
-    print (body)
-
 logging.basicConfig(level=logging.INFO)
+
+def process_request(ch, method, properties, body): 
+    logging.info(str(body))
+    str_body = str(body)
+    email_start = str_body.find("email")+9
+    email_end = str_body.find("hash")-4
+    email = str_body[email_start:email_end]
+    hash_start = str_body.find("hash")+8
+    hash_end = str_body.find("}")-1
+    user_hash = str_body[hash_start:hash_end] 
+    logging.info(user_hash)
+    #logging.info(type(body["data"]))
+
 
 # repeatedly try to connect to db and messaging, waiting up to 60s, doubling
 # backoff
@@ -47,10 +57,11 @@ connection = pika.BlockingConnection(
 channel = connection.channel()
 
 # create the request queue if it doesn't exist
-channel.queue_declare(queue='hello world')
+channel.queue_declare(queue='request')
 
-channel.basic_consume(queue='hello world', auto_ack=True,
-                      on_message_callback=process_request)
+channel.basic_consume(queue='request', auto_ack=True,on_message_callback=process_request,
+                    consumer_tag='backend hw')
+
 
 # loops forever consuming from 'request' queue
 logging.info("Starting consumption...")
