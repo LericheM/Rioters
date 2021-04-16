@@ -1,8 +1,10 @@
-import pika
-import mysql.connector
+import logging
 import os
 import time
-import logging
+
+import mysql.connector
+import pika
+import pika.exceptions
 
 logging.basicConfig(level=logging.INFO)
 
@@ -16,7 +18,44 @@ def process_request(ch, method, properties, body):
     hash_end = str_body.find("}")-1
     user_hash = str_body[hash_start:hash_end] 
     logging.info(user_hash)
+    action_start = str_body.find(":")+3
+    action_end = str_body.find(",")-1
+    action = str_body[action_start:action_end]
+    channel.basic_ack(delivery_tag=method.delivery_tag)
+
+    if action == "REGISTER":
+        #store in db
+        register_user(email, user_hash, mycursor)
+        return_msg(action, channel)
+    elif action == "GETHASH":
+        #lookup in db
+        login_user(email, user_hash, mycursor)
+        return_msg(action, channel)
+    else:
+        logging.info(action)
+        return_msg(action,channel)
     #logging.info(type(body["data"]))
+
+def register_user(user_email, user_pass, cursor):
+    #TODO: 1 Connect to DB 2 Create a new entry in the appropriate table 3 verify successful add
+    cursor.execute("INSERT INTO users (username, password) VALUES (%s, %s)",(user_email,user_pass))
+    logging.info(cursor)
+
+def login_user(user_email, user_pass, cursor):
+    #TODO: 1 Connect to DB 2 Pull the hash based on username 3 compare the hashes, 4 return t/f
+    cursor.execute("SELECT password FROM users WHERE username = %s")
+    #need to copy the username from the stdout
+
+def return_msg(action_string, msg_ch):
+    if action_string == "REGISTER" and msg_ch.is_open:
+        msg_body = 'REGISTER',{'success': True}
+        try:
+            msg_ch.basic_publish(exchange='request', body=msg_body, properties=pika.BasicProperties(delivery_mode=2, #messages are now persistant
+            ))
+        except pika.exceptions.UnroutableError as err :
+            logging.info("UnroutableError error: {0}".format(err))
+        except pika.exceptions.NackError as err :
+            logging.info("NackError error: {0}".format(err))
 
 
 # repeatedly try to connect to db and messaging, waiting up to 60s, doubling
@@ -57,10 +96,12 @@ connection = pika.BlockingConnection(
 channel = connection.channel()
 
 # create the request queue if it doesn't exist
-channel.queue_declare(queue='request')
+channel.queue_declare(queue='request', durable=True)
+channel.exchange_declare(exchange="login_sys", exchange_type="direct")
+channel.queue_bind(exchange="login_sys", queue="request")
 
-channel.basic_consume(queue='request', auto_ack=True,on_message_callback=process_request,
-                    consumer_tag='backend hw')
+channel.basic_consume(
+    queue='request', auto_ack=True, on_message_callback=process_request, consumer_tag='backend hw')
 
 
 # loops forever consuming from 'request' queue
